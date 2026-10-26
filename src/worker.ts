@@ -9,6 +9,8 @@
  * No KV, no sticky cookies, no Deno targets.
  */
 
+import { decorateHtmlRevisionFooter } from './utils/revision-footer'
+
 declare const __UOS_ROUTER_REVISION__: string | undefined
 
 const ROUTER_REVISION_HEADER = 'x-uos-router-revision'
@@ -138,11 +140,12 @@ export default {
           }))
         } catch {}
       }
-      return withRouterRevision(new Response(response.body, {
+      const proxiedResponse = withRouterRevision(new Response(response.body, {
         status: response.status,
         statusText: response.statusText,
         headers,
       }))
+      return await decorateHtmlRevisionFooter(request, proxiedResponse, ROUTER_REVISION)
     } catch (err) {
       markOriginDegraded(degradedKey, degradedTtlMs)
       console.error(JSON.stringify({
